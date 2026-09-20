@@ -3,7 +3,10 @@ project:
   output-dir: docs
   render :
   - index.qmd
-
+  - mp01.qmd
+  - mp02.qmd
+  - mp03.qmd
+  - mp04.qmd
 website:
   title: "STA 9750 Submission Material"
   description:
