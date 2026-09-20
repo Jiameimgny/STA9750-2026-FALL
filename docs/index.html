@@ -73,6 +73,26 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<link href="site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+
+<link href="site_libs/leaflet-1.3.1/leaflet.css" rel="stylesheet">
+
+<script src="site_libs/leaflet-1.3.1/leaflet.js"></script>
+
+<link href="site_libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet">
+
+<script src="site_libs/proj4-2.6.2/proj4.min.js"></script>
+
+<script src="site_libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script>
+
+<link href="site_libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet">
+
+<script src="site_libs/leaflet-binding-2.2.3/leaflet.js"></script>
+
 
 
 <link rel="stylesheet" href="styles.css">
@@ -128,11 +148,13 @@ ul.task-list li input[type="checkbox"] {
 </figure>
 </div>
 <hr>
-<p>Last Updated: Sunday 09 20, 2026 at 12:42PM</p>
-<p>#| echo: false #| message: false #| warning: false</p>
-<p>if(!require(“leaflet”)){ options(repos=c(CRAN=“https://cloud.r-project.org”)) install.packages(“leaflet”) stopifnot(require(“leaflet”)) }</p>
-<p>baruch_longitude &lt;- -73.98333 baruch_latitude &lt;- +40.74028</p>
-<p>leaflet() |&gt; addTiles() |&gt; setView(baruch_longitude, baruch_latitude, zoom=17) |&gt; addPopups(baruch_longitude, baruch_latitude, “I am a Master’s student at <b>Baruch College</b>!”)</p>
+<p>Last Updated: Sunday 09 20, 2026 at 15:27PM</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item" id="htmlwidget-39d5db469eb7f002ceb6" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-39d5db469eb7f002ceb6">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addPopups","args":[40.74028,-73.98333,"I am a Master's student at <b>Baruch College<\/b>!",null,null,{"maxWidth":300,"minWidth":50,"autoPan":true,"keepInView":false,"closeButton":true,"className":""}]}],"setView":[[40.74028,-73.98333],17,[]],"limits":{"lat":[40.74028,40.74028],"lng":[-73.98333,-73.98333]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
 <p>source(“https://michael-weylandt.com/STA9750/load_helpers.R”) mp_submission_verify(0, “Jiameimgny”)</p>
 
 

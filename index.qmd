@@ -9,8 +9,6 @@ title: "I LOVE MONTANA"
 ```
 --------------
 Last Updated: `r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`
-
-
 ```{r}
 #| echo: false
 #| message: false
@@ -30,6 +28,7 @@ leaflet() |>
   setView(baruch_longitude, baruch_latitude, zoom=17) |>
   addPopups(baruch_longitude, baruch_latitude, 
             "I am a Master's student at <b>Baruch College</b>!")
+```
 
 
 source("https://michael-weylandt.com/STA9750/load_helpers.R")
