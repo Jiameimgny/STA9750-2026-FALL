@@ -1,0 +1,42 @@
+
+peer_feedback_assignment_1:
+  issue_number: 12
+  issue_owner: charinoo
+  issue_ok: yes
+  issue_status: OK
+  overall_comments:
+    positive: There is a strong hiearchy.
+    negative: Replace the map with something more unique or personal such as hobbie.
+    advice: The person could include a header 3 line to be more descriptive
+  scores: []
+  mp_number: 0
+peer_feedback_assignment_2:
+  issue_number: 42
+  issue_owner: luisdflores
+  issue_ok: yes
+  issue_status: OK
+  overall_comments:
+    positive: |-
+      Asethetically appealing and provided contents.
+      The person providedn a good bio.
+    negative: The background color could be less intense.
+    advice: There could be a big frame to hold all texts.
+  scores: []
+  mp_number: 0
+peer_feedback_assignment_3:
+  issue_number: 46
+  issue_owner: mpaulm
+  issue_ok: yes
+  issue_status: OK
+  overall_comments:
+    positive: |-
+      Very descriptive bio
+      Missing status line in the footer
+    negative: |-
+      Missing status line in the footer
+      nEED TO ADD a divider for better proximity
+    advice: Add a divider after header or before the map.
+  scores: []
+  mp_number: 0
+evaluator: jiameimgny
+
