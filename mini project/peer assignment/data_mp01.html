@@ -74,6 +74,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -99,9 +128,46 @@ ul.task-list li input[type="checkbox"] {
 <p>download_if_needed &lt;- function(url, local){ if(!file_exists(local)){ download.file(url, local, quiet = TRUE, mode = “wb”) }</p>
 <pre><code>return(local)</code></pre>
 <p>}</p>
-<p>NETFLIX_URLS |&gt; map(read_html) |&gt; map(html_element, xpath = “//a<span class="citation" data-cites="href">[contains(@href, '.xlsx')]</span>”) |&gt; map_chr(html_attr, “href”) |&gt; enframe(“period”, “url”) |&gt; mutate(path = path(data_dir, paste0(period, “.xlsx”)), path = map2(url, path, download_if_needed), data = map(path, read_excel, skip=3, na=“<em>”), data = map(data, (x) x |&gt; mutate(<code>Release Date</code> = as.Date(<code>Release Date</code>)))) |&gt; unnest(data) |&gt; select(-url, -path) |&gt; mutate(year=str_sub(period, 1, 4), half=str_sub(period, start=6), period_start = make_date(year, if_else(half==1, 1, 7), 1), period_end = make_date(year, if_else(half==1, 7, 12), if_else(half==1, 30, 31))) |&gt; filter(!is.na(<code>Hours Viewed</code>)) |&gt; mutate(live_event = !is.na(Runtime) &amp; str_detect(Runtime, ”\d+:\d+\</em>”), clean_time = str_remove(Runtime, fixed(“<em>”)), Runtime = 60 </em> hour(hm(clean_time)) + minute(hm(clean_time))) |&gt; select(-clean_time) |&gt; mutate(Runtime = coalesce(Runtime, mean(Runtime, na.rm=TRUE)), .by=Title, Title = stringi::stri_trans_general(Title,”Latin-ASCII”), Title = str_remove(Title, ” // .<em>“), Title = str_remove(Title,”[<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>].</em>”), Title = str_trim(Title)) |&gt; filter_out(Title == ““) |&gt; select(year, period, period_start, period_end, Title, -half, Runtime, Views, <code>Hours Viewed</code>, <code>Release Date</code>, <code>Available Globally?</code>, live_event) }</p>
+<p>NETFLIX_URLS |&gt; map(read_html) |&gt; map(html_element, xpath = “//a<span class="citation" data-cites="href">[contains(@href, '.xlsx')]</span>”) |&gt; map_chr(html_attr, “href”) |&gt; enframe(“period”, “url”) |&gt; mutate(path = path(data_dir, paste0(period, “.xlsx”)), path = map2(url, path, download_if_needed), data = map(path, read_excel, skip=3, na=“<em>”), data = map(data, (x) x |&gt; mutate(<code>Release Date</code> = as.Date(<code>Release Date</code>)))) |&gt; unnest(data) |&gt; select(-url, -path) |&gt; mutate(year=str_sub(period, 1, 4), half=str_sub(period, start=6), period_start = make_date(year, if_else(half==1, 1, 7), 1), period_end = make_date(year, if_else(half==1, 7, 12), if_else(half==1, 30, 31))) |&gt; filter(!is.na(<code>Hours Viewed</code>)) |&gt; mutate(live_event = !is.na(Runtime) &amp; str_detect(Runtime, ”\d+:\d+\</em>”), clean_time = str_remove(Runtime, fixed(“<em>”)), Runtime = 60 </em> hour(hm(clean_time)) + minute(hm(clean_time))) |&gt; select(-clean_time) |&gt; mutate(Runtime = coalesce(Runtime, mean(Runtime, na.rm=TRUE)), .by=Title, Title = stringi::stri_trans_general(Title,”Latin-ASCII”), Title = str_remove(Title, ” // .<em>“), Title = str_remove(Title,”[<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>].</em>”), Title = str_trim(Title)) |&gt; filter_out(Title == ““) |&gt; select(year, period, period_start, period_end, Title, -half, Runtime, Views, <code>Hours Viewed</code>, <code>Release Date</code>, <code>Available Globally?</code>, live_event) NETFLIX_DATA |&gt; rename(runtime = <code>Runtime</code>, title = <code>Title</code>, views = <code>Views</code>, hours_viewed = <code>Hours Viewed</code>, release_date = <code>Release Date</code>, available_globally=<code>Available Globally?</code>)</p>
+<p>}</p>
+<p>NETFLIX_DATA &lt;- NETFLIX_DATA |&gt; mutate(year=as.integer(year), available_globally=available_globally==‘Yes’)</p>
 <p>NETFLIX_DATA &lt;- load_netflix_data()</p>
-<p>glimpse(NETFLIX_DATA)</p>
+<p>glimpse(NETFLIX_DATA) summary(NETFLIX_DATA)</p>
+<p>slice_sample(NETFLIX_DATA,n=100)</p>
+<p>#task 5</p>
+<p>NETFLIX_DATA |&gt; summarize(from_date=min(period_start,na.rm=TRUE),to_date=max(period_end,na.rm=TRUE)) ## question 1 tail(NETFLIX_DATA,100) ##check for question 1</p>
+<p>NETFLIX_DATA |&gt; summarize(num_shows_movies=n_distinct(title)) ##question 2</p>
+<p>NETFLIX_DATA |&gt; filter(str_detect(title,‘Bridgerton’)) |&gt; summarize(total_hours_watched=sum(hours_viewed,na.rm=TRUE)) ##question 3</p>
+<p>NETFLIX_DATA |&gt; filter(str_detect(title, “Stranger Things”)) |&gt; filter_out(str_detect(title, “Beyond Stranger Things”)) |&gt; filter_out(str_detect(title, “Tales from”)) |&gt; filter_out(str_detect(title, “Fireplace”)) |&gt; summarize(ST_total_hours_watched= sum(hours_viewed, na.rm = TRUE)) ##question 4</p>
+<p>top10_hours = NETFLIX_DATA |&gt; filter(period == “2026H1”) |&gt; slice_max(order_by = hours_viewed, n = 10, with_ties = FALSE) |&gt; summarize(top10_hours = sum(hours_viewed, na.rm = TRUE))</p>
+<p>total = NETFLIX_DATA |&gt; filter(period == “2026H1”) |&gt; summarize(total = sum(hours_viewed, na.rm = TRUE))</p>
+<p>print(100 * (top10_hours<span class="math inline">\(top10_hours / total\)</span>total)) ## question 5</p>
+<p>global_title = NETFLIX_DATA |&gt; summarize(total = n()) |&gt; pull(total)</p>
+<p>title_num = NETFLIX_DATA |&gt; filter(available_globally == “TRUE”) |&gt; summarize(total = n()) |&gt; pull(total)</p>
+<p>fraction_global = title_num / global_title</p>
+<p>print(fraction_global) ##question 6 title fraction</p>
+<p>global_hours = NETFLIX_DATA |&gt; filter(available_globally == “TRUE”) |&gt; summarize(total = sum(hours_viewed, na.rm = TRUE)) |&gt; pull(total)</p>
+<p>total_hours = NETFLIX_DATA |&gt; summarize(total = sum(hours_viewed, na.rm = TRUE)) |&gt; pull(total)</p>
+<p>fraction_global_hours = global_hours / total_hours</p>
+<p>print(fraction_global_hours) #question 6 hour fraction</p>
+<p>#task 7 top_title_hours = NETFLIX_DATA |&gt; group_by(period) |&gt; slice_max(order_by = hours_viewed, n = 1, with_ties = FALSE) |&gt; ungroup() |&gt; select(period, title, hours_viewed)</p>
+<p>print(top_title_hours)</p>
+<p>total_hours_each_period = NETFLIX_DATA|&gt; group_by(period)|&gt; summarize(total_hours_each_period=sum(hours_viewed,na.rm=TRUE))</p>
+<p>print(total_hours_each_period)</p>
+<p>top_title_fraction = top_title_hours|&gt; left_join(total_hours_each_period,join_by(period))|&gt; mutate(top_title_fraction=hours_viewed/total_hours_each_period) print(top_title_fraction) # question 1</p>
+<p>#AI catalog_size = NETFLIX_DATA |&gt; group_by(period) |&gt; summarize( number_of_titles = n_distinct(title), total_runtime = sum(runtime, na.rm = TRUE) )</p>
+<p>print(catalog_size) #question 2</p>
+<p>#AI most_consistent = NETFLIX_DATA |&gt; group_by(title)|&gt; summarize( average_views=mean(hours_viewed,na.rm=TRUE), minimum_views=min(hours_viewed,na.rm=TRUE), stdv_views=sd(hours_viewed,na.rm=TRUE), number_of_periods=n_distinct((period)) )</p>
+<p>print(most_consistent)</p>
+<p>consistent_titles = most_consistent |&gt; filter( average_views &gt; 10000000, minimum_views &gt; 1000000, number_of_periods &gt;= 3 ) |&gt; arrange(stdv_viewership)</p>
+<p>print(consistent_titles) # question 3</p>
+<p>NETFLIX_DATA|&gt; filter(live_event==TRUE)|&gt; select(title) # trying to test if live events will help differentiate movie vs show</p>
+<p>#AI NETFLIX_DATA &lt;- NETFLIX_DATA |&gt; mutate( content_type = case_when( runtime &gt; 240 ~ “Show”, str_detect( title, regex(“season|limited series|volume|part [0-9]+”, ignore_case = TRUE) ) ~ “Show”, live_event == FALSE ~ “Movie”, #movies almost never have live events live_event == TRUE ~ “Show”, TRUE ~ NA_character_ ) )</p>
+<p>period_summary &lt;- NETFLIX_DATA |&gt; group_by(period, content_type) |&gt; summarise( total_hours = sum(hours_viewed, na.rm = TRUE), .groups = “drop” ) |&gt; group_by(period) |&gt; mutate( fraction = total_hours / sum(total_hours) ) |&gt; ungroup()</p>
+<p>#check content_type NETFLIX_DATA|&gt; filter(content_type==‘Movie’)|&gt; select(title)</p>
+<p>period_summary</p>
+<p>#AI live_comparison &lt;- NETFLIX_DATA |&gt; filter(!is.na(live_event), !is.na(hours_viewed)) |&gt; mutate( content_group = if_else( live_event, “Live Event”, “Pre-taped Content” ) ) |&gt; group_by(content_group) |&gt; summarise( number_of_titles = n(), average_hours = mean(hours_viewed), median_hours = median(hours_viewed), total_hours = sum(hours_viewed), .groups = “drop” )</p>
+<p>live_comparison</p>
 
 
 

@@ -1,6 +1,28 @@
 ---
-title: "Mini-Project Placeholder"
+title: "JL Netflix Strategic Content Plan"
+
+format: html
+
 ---
+
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show R code"
+#| label: setup
+#| include: false
+
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+
+```
+
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show R code"
 #' Acquire Netflix What We Watched Reports
 #' 
 #' This function will acquire and standardize all data for MP#01
@@ -102,99 +124,122 @@ NETFLIX_DATA <-   NETFLIX_DATA |> rename(runtime = `Runtime`,
 
 NETFLIX_DATA <- NETFLIX_DATA |> mutate(year=as.integer(year), available_globally=available_globally=='Yes')
 
+### Overview
 glimpse(NETFLIX_DATA)
 summary(NETFLIX_DATA)
 
 slice_sample(NETFLIX_DATA,n=100)
 
 #task 5
+#question 1
+NETFLIX_DATA |> summarize(from_date=min(period_start,na.rm=TRUE),to_date=max(period_end,na.rm=TRUE))  
+#check for question 1. To confirm the last row matches the period_end date. 
+tail(NETFLIX_DATA,100) 
 
-NETFLIX_DATA |> summarize(from_date=min(period_start,na.rm=TRUE),to_date=max(period_end,na.rm=TRUE))  ## question 1
-tail(NETFLIX_DATA,100) ##check for question 1
+#question 2
+NETFLIX_DATA |> summarize(num_shows_movies=n_distinct(title))  
 
-NETFLIX_DATA |> summarize(num_shows_movies=n_distinct(title))  ##question 2
+#question 3
+NETFLIX_DATA |> filter(str_detect(title,'Bridgerton')) |> summarize(total_hours_watched=sum(hours_viewed,na.rm=TRUE)) 
 
-NETFLIX_DATA |> filter(str_detect(title,'Bridgerton')) |> summarize(total_hours_watched=sum(hours_viewed,na.rm=TRUE)) ##question 3
-
+#question 4 
 NETFLIX_DATA |>
   filter(str_detect(title, "Stranger Things")) |>
   filter_out(str_detect(title, "Beyond Stranger Things")) |>
   filter_out(str_detect(title, "Tales from")) |>
   filter_out(str_detect(title, "Fireplace")) |>
-  summarize(ST_total_hours_watched= sum(hours_viewed, na.rm = TRUE))    ##question 4 
+  summarize(ST_total_hours_watched= sum(hours_viewed, na.rm = TRUE))    
+
+
 
 #AI
+# question 5
 top10_hours = NETFLIX_DATA |>
   filter(period == "2026H1") |>
   slice_max(order_by = hours_viewed, n = 10, with_ties = FALSE) |>
   summarize(top10_hours = sum(hours_viewed, na.rm = TRUE))
-
 total = NETFLIX_DATA |> 
   filter(period == "2026H1") |>
   summarize(total = sum(hours_viewed, na.rm = TRUE))
+print("Top 10 Hours")
+print(100 * (top10_hours$top10_hours / total$total))   
 
-print(100 * (top10_hours$top10_hours / total$total))   ## question 5
+
+
 
 #AI
+#question 6 title fraction
 global_title = NETFLIX_DATA |>
   summarize(total = n()) |>
   pull(total)
-
 title_num = NETFLIX_DATA |>
   filter(available_globally == "TRUE") |>
   summarize(total = n()) |>
   pull(total)
-
 fraction_global = title_num / global_title
+print("Fraction of Globally Available Content")
+fraction_global 
 
-print(fraction_global)  ##question 6 title fraction
 
 global_hours = NETFLIX_DATA |>
   filter(available_globally == "TRUE") |>
   summarize(total = sum(hours_viewed, na.rm = TRUE)) |>
   pull(total)
-
 total_hours = NETFLIX_DATA |>
   summarize(total = sum(hours_viewed, na.rm = TRUE)) |>
   pull(total)
-
 fraction_global_hours = global_hours / total_hours
+print("Fraction of the Hours Watched on Global Content")
+fraction_global_hours
 
-print(fraction_global_hours)  #question 6 hour fraction
+
 
 
 #task 6
+#question 1
 #AI
 top_title_hours = NETFLIX_DATA |>
   group_by(period) |>
   slice_max(order_by = hours_viewed, n = 1, with_ties = FALSE) |>
   ungroup() |>
   select(period, title, hours_viewed)
-
-print(top_title_hours)
+print("Most Watched Content From Each Period")
+top_title_hours
 
 total_hours_each_period = NETFLIX_DATA|>
   group_by(period)|>
   summarize(total_hours_each_period=sum(hours_viewed,na.rm=TRUE))
-
-print(total_hours_each_period)
+print("Total Hours Viewed by Period")
+total_hours_each_period
 
 top_title_fraction = top_title_hours|>
  left_join(total_hours_each_period,join_by(period))|>
   mutate(top_title_fraction=hours_viewed/total_hours_each_period)
-print(top_title_fraction)  # question 1
+print("Fraction")  
+top_title_fraction
+
+
+
+
 
 #AI
+#question 2
 catalog_size = NETFLIX_DATA |>
   group_by(period) |>
   summarize(
     number_of_titles = n_distinct(title),
     total_runtime = sum(runtime, na.rm = TRUE)
   )
+print("Number of Contents in Each Period")
+catalog_size
 
-print(catalog_size) #question 2
 
+
+
+
+# question 3
 #AI
+#In order to understand and list the contents with the most consistently high viewership, we must first group them by title, then calculate the average viewership to set as a benchmark. Then, we will use statistical functions to compare and contrast the results.
 most_consistent = NETFLIX_DATA |>
   group_by(title)|>
   summarize(
@@ -203,8 +248,8 @@ most_consistent = NETFLIX_DATA |>
     stdv_views=sd(hours_viewed,na.rm=TRUE),
     number_of_periods=n_distinct((period))
   )
-
-print(most_consistent)
+print("Viewing Consistency Statistics")
+most_consistent
 
 consistent_titles = most_consistent |>
   filter(
@@ -213,15 +258,20 @@ consistent_titles = most_consistent |>
     number_of_periods >= 3
   ) |>
   arrange(stdv_views)
+print("Contents With Above Average Views")
+consistent_titles
 
-print(consistent_titles) # question 3
 
+
+
+# trying to test if live events will help differentiate movie vs show
 NETFLIX_DATA|>
   filter(live_event==TRUE)|>
-  select(title) # trying to test if live events will help differentiate movie vs show
+  select(title) 
 
-
+#question 4
 #AI
+## In order to check content type, the attributes that differentiate Shows from Movies must first be defined. The `regex()` function identifies keywords in the title, with `|` representing “OR” to allow multiple search patterns.In order to check content type, the attributes for show vs movie must be defined. Regex() consolidates all the attributes that differentiate show from movies. It works as a search tool with '|' representing 'OR.  
 NETFLIX_DATA <- NETFLIX_DATA |>
   mutate(
     content_type = case_when(
@@ -236,7 +286,6 @@ NETFLIX_DATA <- NETFLIX_DATA |>
       TRUE ~ NA_character_
     )
   )
-
 period_summary <- NETFLIX_DATA |>
   group_by(period, content_type) |>
   summarise(
@@ -247,16 +296,20 @@ period_summary <- NETFLIX_DATA |>
   mutate(
     fraction = total_hours / sum(total_hours)
   ) |>
+  #Ungroup is needed here to prevent later operations from being affected by the grouping structure.
   ungroup()
-
-#check content_type
 NETFLIX_DATA|>
   filter(content_type=='Movie')|>
   select(title)
-
+print("Total Viewing Hours and Viewing Share by Content Type")
 period_summary
 
+
+
+
+#question 5
 #AI
+#In order to compare Live Events and Pre-taped Content, records with missing live event status or viewing hours are first removed. The remaining records are divided into two groups based on their live event status. Statistical functions are then used to calculate the number of records, average viewing hours, median viewing hours, and total viewing hours for each group. The `summary()` function provides a general overview of the original dataset, while `filter()` and `slice_max()` identify the content with the highest viewing hours during the first half of 2023.
 live_comparison <- NETFLIX_DATA |>
   filter(!is.na(live_event), !is.na(hours_viewed)) |>
   mutate(
@@ -274,13 +327,97 @@ live_comparison <- NETFLIX_DATA |>
     total_hours = sum(hours_viewed),
     .groups = "drop"
   )
-
+print("Comparing Live Events and Pre-taped Content")
 live_comparison
-
-summary(NETFLIX_DATA)
 
 NETFLIX_DATA |>
   filter(period=="2023H1")|>
   slice_max(order_by = hours_viewed)
+
+
+
+#Analyzing pattern in Netflix's content across the 7 periods
+age_trend <- NETFLIX_DATA |>
+  filter(!is.na(release_date)) |>
+  mutate(age = case_when(
+    release_date >= period_start ~ "Released this period",
+    release_date >= period_start - 180 ~ "Released prior 6 months",
+    TRUE ~ "Older")) |>
+  group_by(period, age) |>
+  summarize(hours = sum(hours_viewed, na.rm = TRUE), .groups = "drop") |>
+  group_by(period) |>
+  mutate(share = hours / sum(hours)) |>
+  ungroup()
+  
+  
+```
+
+
+As competition intensifies and subscriber growth matures, Netflix should defend its position through its contents. Based on seven semi-annual engagement reports (2023H1–2026H1), I recommend three priorities: favor shows over movies, renew proven shows while adding sports programs, and fund a focused live-event slate
+
+### Increase Subscribers
+Shows generated more watch time than movies in all seven reporting periods (2023H1-2026H1). In 2023H1, when the data is most comparable, shows accounted for 71.5% of hours versus 28.5% for movies. Shows hours have also grown, from 64.0B in 2023H2 to 72.2B in 2026H1. This demonstrates the continuous growth in viewership as the number of show releases increased over the years. If Netflix offers the right shows to meet viewer demand, subscription revenue will increase as more people subscribe to watch the content they enjoy.
+```{r}
+#| code-fold: true
+#| code-summary: "Show R code"
+#| label: shows-movies-plot
+#| echo: false
+#| fig-cap: "Hours viewed by content type. Shows (including live events) exceed movies in every period."
+
+period_summary |>
+  mutate(content_type = factor(content_type, levels = c("Movie", "Show"))) |>
+  ggplot(aes(period, total_hours / 1e9, fill = content_type)) +
+  geom_col() +
+  geom_text(aes(label = scales::percent(fraction, accuracy = 0.1)),
+            position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "Period", y = "Hours viewed (billions)", fill = NULL,
+       title = "Shows vs. movies: hours viewed by period")
+```
+
+### Maintain Subscribers:
+Returning shows anchor engagement. In the first two reporting periods, the most-watched title was a new series (The Night Agent: Season 1, 812M hours; King the Land, 630M). In every period since 2024H1 it was a returning season: Bridgerton Seasons 3 and 4, Squid Game Season 2, and Wednesday Season 2. The No.1 title’s hours rose from 620M in 2024H2 to 964M in 2025H2 and 890M in 2026H1. Squid Game Season 2 topped two consecutive periods, which shows a major release can hold attention for months. Netflix should keep renewing the proven series. Returning seasons inherit an existing audience, so this shows they perform, not that renewal creates loyalty. New series still matter, because new titles topped the first two periods.
+```{r}
+#| code-fold: true
+#| code-summary: "Show R code"
+#| label: top-title-plot
+#| echo: false
+#| fig-cap: "Most-watched title in each period, by hours viewed. New series topped the first two periods; returning seasons topped every period since 2024H1."
+
+top_title_fraction |>
+  mutate(type = if_else(str_detect(title, "Season ([2-9]|1[0-9])"),
+                        "Returning season", "New series")) |>
+  ggplot(aes(period, hours_viewed / 1e6, fill = type)) +
+  geom_col() +
+  geom_text(aes(label = title), angle = 90, hjust = 1.05, size = 3,
+            colour = "white") +
+  labs(x = "Period", y = "Hours viewed (millions)", fill = NULL,
+       title = "Most-watched title by period")
+```
+
+### Retain Users:
+Live events made up only 0.31% to 0.46% of total hours from 2024H2 to 2026H1. They are concentrated, though. Jake Paul vs. Mike Tyson drew 235.7M hours. Eight of the eleven largest live titles are WWE programming (Raw, Royal Rumble, WrestleMania), which suggests recurring live franchises are a steadier base, while one-off events add upside. Live viewing is strategic because limited-time events gather people to watch together and may reduce cancellations and encourage resubscription. Live sports audiences are also attractive to advertisers, who tend to pay premium rates. A great example is the Super Bowl.
+
+### Inventory:
+After implementing the three strategic pillars, Netflix also needs to manage and clean its library. In particular, older titles, meaning titles released before the prior six months, should be kept because they attract 4.3 to 6.3 times the share of hours of titles released in the prior six months. Netflix should also keep sourcing new releases, meaning titles released during the period, because their share of hours is about 2.9 to 4.2 times that of titles released in the prior six months. Most importantly, globally available titles were only 37.1% to 38.7% of titles from 2024H1 to 2026H1, but they drew 49.1% to 53.6% of hours, or about 1.6 to 2.0 times the hours per title of regionally limited titles. Hence, Netflix should keep and renew its older catalog and acquire or produce content with worldwide rights, because content that can be watched everywhere gets more viewing per title.
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show R code"
+ggplot(age_trend, aes(period, share, fill = age)) +
+  geom_col() +
+  labs(y = "Share of hours", fill = NULL, title = "Viewing by title age")
+```
+
+
             
-            
+::: {.callout-note title="AI Usage Statement" collapse="true"}
+
+## AI Usage Statement
+
+Agentic AI was utilized to develop the knowledge needed to write accurate and concise code for computing all necessary results. Specifically, AI was used to correct and add the appropriate syntax to each function.
+
+The type of agentic AI used was ChatGPT.
+
+:::            
+  
+  
