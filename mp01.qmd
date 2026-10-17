@@ -353,6 +353,7 @@ age_trend <- NETFLIX_DATA |>
 ```
 
 
+# Corporate Strategy 
 As competition intensifies and subscriber growth matures, Netflix should defend its position through its contents. Based on seven semi-annual engagement reports (2023H1–2026H1), I recommend three priorities: favor shows over movies, renew proven shows while adding sports programs, and fund a focused live-event slate
 
 ### Increase Subscribers
