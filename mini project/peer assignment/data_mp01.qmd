@@ -83,10 +83,221 @@ load_netflix_data <- function(){
            `Release Date`,
            `Available Globally?`, 
            live_event)
+
+  
 }
+
 
 NETFLIX_DATA <- load_netflix_data()
 
+NETFLIX_DATA <-   NETFLIX_DATA |> rename(runtime = `Runtime`, 
+                                         title = `Title`,
+                                         views = `Views`,
+                                         hours_viewed = `Hours Viewed`,
+                                         release_date = `Release Date`, 
+                                         available_globally=`Available Globally?`)
+
+NETFLIX_DATA <- NETFLIX_DATA |> mutate(year=as.integer(year), available_globally=available_globally=='Yes')
 
 glimpse(NETFLIX_DATA)
+summary(NETFLIX_DATA)
 
+slice_sample(NETFLIX_DATA,n=100)
+
+#task 5
+
+NETFLIX_DATA |> summarize(from_date=min(period_start,na.rm=TRUE),to_date=max(period_end,na.rm=TRUE))  ## question 1
+tail(NETFLIX_DATA,100) ##check for question 1
+
+NETFLIX_DATA |> summarize(num_shows_movies=n_distinct(title))  ##question 2
+
+NETFLIX_DATA |> filter(str_detect(title,'Bridgerton')) |> summarize(total_hours_watched=sum(hours_viewed,na.rm=TRUE)) ##question 3
+
+NETFLIX_DATA |>
+  filter(str_detect(title, "Stranger Things")) |>
+  filter_out(str_detect(title, "Beyond Stranger Things")) |>
+  filter_out(str_detect(title, "Tales from")) |>
+  filter_out(str_detect(title, "Fireplace")) |>
+  summarize(ST_total_hours_watched= sum(hours_viewed, na.rm = TRUE))    ##question 4 
+
+#AI
+top10_hours = NETFLIX_DATA |>
+  filter(period == "2026H1") |>
+  slice_max(order_by = hours_viewed, n = 10, with_ties = FALSE) |>
+  summarize(top10_hours = sum(hours_viewed, na.rm = TRUE))
+
+total = NETFLIX_DATA |> 
+  filter(period == "2026H1") |>
+  summarize(total = sum(hours_viewed, na.rm = TRUE))
+
+print(100 * (top10_hours$top10_hours / total$total))   ## question 5
+
+#AI
+global_title = NETFLIX_DATA |>
+  summarize(total = n()) |>
+  pull(total)
+
+title_num = NETFLIX_DATA |>
+  filter(available_globally == "TRUE") |>
+  summarize(total = n()) |>
+  pull(total)
+
+fraction_global = title_num / global_title
+
+print(fraction_global)  ##question 6 title fraction
+
+global_hours = NETFLIX_DATA |>
+  filter(available_globally == "TRUE") |>
+  summarize(total = sum(hours_viewed, na.rm = TRUE)) |>
+  pull(total)
+
+total_hours = NETFLIX_DATA |>
+  summarize(total = sum(hours_viewed, na.rm = TRUE)) |>
+  pull(total)
+
+fraction_global_hours = global_hours / total_hours
+
+print(fraction_global_hours)  #question 6 hour fraction
+
+
+#task 6
+#AI
+top_title_hours = NETFLIX_DATA |>
+  group_by(period) |>
+  slice_max(order_by = hours_viewed, n = 1, with_ties = FALSE) |>
+  ungroup() |>
+  select(period, title, hours_viewed)
+
+print(top_title_hours)
+
+total_hours_each_period = NETFLIX_DATA|>
+  group_by(period)|>
+  summarize(total_hours_each_period=sum(hours_viewed,na.rm=TRUE))
+
+print(total_hours_each_period)
+
+top_title_fraction = top_title_hours|>
+ left_join(total_hours_each_period,join_by(period))|>
+  mutate(top_title_fraction=hours_viewed/total_hours_each_period)
+print(top_title_fraction)  # question 1
+
+#AI
+catalog_size = NETFLIX_DATA |>
+  group_by(period) |>
+  summarize(
+    number_of_titles = n_distinct(title),
+    total_runtime = sum(runtime, na.rm = TRUE)
+  )
+
+print(catalog_size) #question 2
+
+#AI
+most_consistent = NETFLIX_DATA |>
+  group_by(title)|>
+  summarize(
+    average_views=mean(hours_viewed,na.rm=TRUE),
+    minimum_views=min(hours_viewed,na.rm=TRUE),
+    stdv_views=sd(hours_viewed,na.rm=TRUE),
+    number_of_periods=n_distinct((period))
+  )
+
+print(most_consistent)
+
+consistent_titles = most_consistent |>
+  filter(
+    average_views > 10000000,
+    minimum_views > 1000000,
+    number_of_periods >= 3
+  ) |>
+  arrange(stdv_views)
+
+print(consistent_titles) # question 3
+
+NETFLIX_DATA|>
+  filter(live_event==TRUE)|>
+  select(title) |>
+  head(n=100)
+# trying to test if live events will help differentiate movie vs show
+
+
+#AI
+NETFLIX_DATA <- NETFLIX_DATA |>
+  mutate(
+    content_type = case_when(
+      runtime > 240 ~ "Show",
+      str_detect(
+        title,
+        regex("season|limited series|volume|part [0-9]+",
+              ignore_case = TRUE)
+      ) ~ "Show",
+      live_event == FALSE ~ "Movie",  #movies almost never have live events
+      live_event == TRUE ~ "Show",
+      TRUE ~ NA_character_
+    )
+  )
+
+period_summary <- NETFLIX_DATA |>
+  group_by(period, content_type) |>
+  summarise(
+    total_hours = sum(hours_viewed, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  group_by(period) |>
+  mutate(
+    fraction = total_hours / sum(total_hours)
+  ) |>
+  ungroup()
+
+#check content_type
+NETFLIX_DATA|>
+  filter(content_type=='Movie')|>
+  select(title)
+
+period_summary
+
+#AI
+live_comparison <- NETFLIX_DATA |>
+  filter(!is.na(live_event), !is.na(hours_viewed)) |>
+  mutate(
+    content_group = if_else(
+      live_event,
+      "Live Event",
+      "Pre-taped Content"
+    )
+  ) |>
+  group_by(content_group) |>
+  summarise(
+    number_of_titles = n(),
+    average_hours = mean(hours_viewed),
+    median_hours = median(hours_viewed),
+    total_hours = sum(hours_viewed),
+    .groups = "drop"
+  )
+
+live_comparison
+
+summary(NETFLIX_DATA)
+
+NETFLIX_DATA |>
+  filter(period=="2023H1")|>
+  slice_max(order_by = hours_viewed)
+
+
+#pattern in content age
+ggplot(overall_trend, aes(period, total_hours / 1e9, group = 1)) +
+  geom_line() + geom_point() +
+  labs(y = "Total hours (billions)", title = "Total hours viewed by period")
+
+ggplot(concentration |> pivot_longer(-period), aes(period, value, color = name, group = name)) +
+  geom_line() + geom_point() +
+  labs(y = "Share of hours", color = NULL, title = "Hit concentration over time")
+
+ggplot(age_trend, aes(period, share, fill = age)) +
+  geom_col() +
+  labs(y = "Share of hours", fill = NULL, title = "Viewing by title age")
+
+
+
+
+            
+            
