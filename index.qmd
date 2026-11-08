@@ -9,6 +9,7 @@ title: "I LOVE MONTANA"
 ```
 --------------
 Last Updated: `r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`
+
 ```{r}
 #| echo: false
 #| message: false
@@ -31,10 +32,7 @@ leaflet() |>
 ```
 
 
+
+
 source("https://michael-weylandt.com/STA9750/load_helpers.R")
 mp_submission_verify(0, "Jiameimgny")
-
-
-
-
-       
